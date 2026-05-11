@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>비룡초 오늘의 급식</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --accent: #fbbf24;
+            --success: #10b981;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 240px;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 8px;
+        }
+
+        .hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 24px 32px;
+        }
+
+        .hero h1 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1rem;
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .input-group {
+            margin-bottom: 32px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .date-picker-wrapper {
+            position: relative;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            font-size: 1.125rem;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            cursor: pointer;
+        }
+
+        input[type="date"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Results Area */
+        #results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .meal-item-card {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .meal-tag {
+            align-self: flex-start;
+            padding: 6px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .meal-menu {
+            font-size: 1.125rem;
+            line-height: 1.7;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .food-item {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .food-item::after {
+            content: "•";
+            margin-left: 8px;
+            color: #cbd5e1;
+        }
+
+        .food-item:last-child::after {
+            content: "";
+        }
+
+        .meal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .kcal {
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Decorative Food Image */
+        .food-decoration {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.15;
+            pointer-events: none;
+            transform: rotate(-15deg);
+        }
+
+        .food-decoration img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Status Messages */
+        .status {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+        }
+
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #e2e8f0;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin: 20px 0;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 20px 10px; }
+            .hero { height: 180px; }
+            .main-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <div class="hero">
+        <img src="C:\Users\sk052\.gemini\antigravity\brain\c6c21bd5-ec23-4240-b985-9e72f55b7607\school_children_eating_1778494563409.png" alt="Happy Children">
+        <div class="hero-overlay">
+            <h1>비룡초 오늘의 급식</h1>
+            <p>우리 아이들의 건강한 한 끼</p>
+        </div>
+    </div>
+
+    <div class="main-card">
+        <div class="input-group">
+            <label for="meal-date">날짜를 골라주세요</label>
+            <div class="date-picker-wrapper">
+                <input type="date" id="meal-date">
+            </div>
+        </div>
+
+        <div id="results-container">
+            <!-- Results injected here -->
+        </div>
+    </div>
+
+    <footer>
+        &copy; 비룡초등학교 &bull; NEIS 급식 정보 서비스
+    </footer>
+</div>
+
+<script>
+    const dateInput = document.getElementById('meal-date');
+    const container = document.getElementById('results-container');
+    const FOOD_IMAGE_PATH = 'C:\\Users\\sk052\\.gemini\\antigravity\\brain\\c6c21bd5-ec23-4240-b985-9e72f55b7607\\school_meal_tray_1778494577881.png';
+
+    // Init date
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    dateInput.value = todayStr;
+
+    // Fetch initial
+    updateMeal(todayStr.replace(/-/g, ''));
+
+    dateInput.addEventListener('change', (e) => {
+        updateMeal(e.target.value.replace(/-/g, ''));
+    });
+
+    async function updateMeal(date) {
+        container.innerHTML = '<div style="text-align:center"><span class="loader"></span></div>';
+
+        const office = 'J10';
+        const school = '7761033';
+        const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?ATPT_OFCDC_SC_CODE=${office}&SD_SCHUL_CODE=${school}&MLSV_YMD=${date}`;
+
+        try {
+            const res = await fetch(url);
+            const xmlText = await res.text();
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, "text/xml");
+            
+            const result = xml.getElementsByTagName("RESULT")[0];
+            const code = result ? result.getElementsByTagName("CODE")[0].textContent : null;
+
+            if (code === "INFO-000") {
+                render(xml);
+            } else if (code === "INFO-200") {
+                message("🍱", "오늘은 급식 정보가 없어요. 주말이나 공휴일인가요?");
+            } else {
+                message("⚠️", "정보를 가져오는데 문제가 생겼어요.");
+            }
+        } catch (e) {
+            message("❌", "연결 상태를 확인해주세요.");
+        }
+    }
+
+    function render(xml) {
+        const rows = xml.getElementsByTagName("row");
+        container.innerHTML = '';
+
+        Array.from(rows).forEach(row => {
+            const type = row.getElementsByTagName("MMEAL_SC_NM")[0].textContent;
+            const kcal = row.getElementsByTagName("CAL_INFO")[0].textContent;
+            const dishes = row.getElementsByTagName("DDISH_NM")[0].textContent;
+
+            const cleanDishes = dishes
+                .replace(/\([0-9.]+\)/g, '')
+                .split('<br/>')
+                .filter(d => d.trim())
+                .map(d => `<span class="food-item">${d.trim()}</span>`)
+                .join('');
+
+            const card = document.createElement('div');
+            card.className = 'meal-item-card';
+            card.innerHTML = `
+                <span class="meal-tag">${type}</span>
+                <div class="meal-menu">${cleanDishes}</div>
+                <div class="meal-footer">
+                    <span class="kcal">🔥 ${kcal}</span>
+                </div>
+                <div class="food-decoration">
+                    <img src="${FOOD_IMAGE_PATH}" alt="food icon">
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function message(icon, text) {
+        container.innerHTML = `
+            <div class="status">
+                <span class="status-icon">${icon}</span>
+                <p>${text}</p>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
+
